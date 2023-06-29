@@ -1,0 +1,45 @@
+ 20 changes: 13 additions & 7 deletions20  
+blockchain/blockchain.go
+@@ -124,13 +124,10 @@ func (b *Blockchain) Head() (*core.Block, error) {
+
+func (b *Blockchain) HeadsHeader() (*core.Header, error) {
+	var header *core.Header
+	return header, b.database.View(func(txn db.Transaction) error {
+
+		height, err := chainHeight(txn)
+		if err != nil {
+			return err
+		}
+
+		header, err = blockHeaderByNumber(txn, height)
+	return header, b.database.View(func(txn db.Transaction) error {
+		var err error
+		header, err = headsHeader(txn)
+		return err
+	})
+}
+@@ -143,6 +140,15 @@ func head(txn db.Transaction) (*core.Block, error) {
+	return BlockByNumber(txn, height)
+}
+
+func headsHeader(txn db.Transaction) (*core.Header, error) {
+	height, err := chainHeight(txn)
+	if err != nil {
+		return nil, err
+	}
+
+	return blockHeaderByNumber(txn, height)
+}
+
+func (b *Blockchain) BlockByNumber(number uint64) (*core.Block, error) {
+	var block *core.Block
+	return block, b.database.View(func(txn db.Transaction) error {
+@@ -348,7 +354,7 @@ func verifyBlock(txn db.Transaction, block *core.Block) error {
+	expectedBlockNumber := uint64(0)
+	expectedParentHash := &felt.Zero
+
+	h, err := head(txn)
+	h, err := headsHeader(txn)
+	if err == nil {
+		expectedBlockNumber = h.Number + 1
+		expectedParentHash = h.Hash
